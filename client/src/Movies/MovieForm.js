@@ -1,16 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-function MovieForm(props) {
+function MovieForm({ match, history, location }) {
 
     const [movieInfo, setMovieInfo] = useState(
         {
+            id: null,
             title: "",
             director: "",
-            metascore: 0,
+            metascore: "",
             stars: []
         }
     );
+
+    useEffect(() => {
+        axios.get(`http://localhost:5000/api/movies/${match.params.id}`)
+            .then(res => setMovieInfo(res.data))
+            .catch(err => console.log(err));
+    }, [match.params.id])
 
     const changeHandler = (e) => {
 
@@ -28,11 +35,24 @@ function MovieForm(props) {
 
     const submitHandler = (e) => {
         e.preventDefault();
+        axios.put(`http://localhost:5000/api/movies/${match.params.id}`, movieInfo)
+            .then(res => {
+                setMovieInfo({
+                    id: null,
+                    title: "",
+                    director: "",
+                    metascore: "",
+                    stars: []
+                });
+                history.push('/');
+            })
+            .catch(err => console.log(err));
     }
 
     return (
-        <div>
-            <form onSubmit={submitHandler}>
+        <div className="form-container">
+            <h1>Update Movie</h1>
+            <form className="update-form" onSubmit={submitHandler}>
                 <input
                     type="text"
                     name="title"
@@ -61,7 +81,7 @@ function MovieForm(props) {
                     onChange={changeHandler}
                     placeholder="Stars (comma separated)"
                 />
-                <button>Update Movie</button>
+                <button className="update-btn">Update Movie</button>
             </form>
         </div>
     );
